@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String                   @id @default(uuid())
+  email                  String                   @unique
+  userName               String
+  password               String
+  phoneNum               String
+  gradeCode              String
+  grade                  Grade                    @relation(fields: [gradeCode], references: [code])
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  ProductMonitoring      ProductMonitoring[]
+  StoreKeywordMonitoring StoreKeywordMonitoring[]
+}
+
+model Category {
+  cid                Int                  @id
+  name               String
+  pid                Int?
+  parent             Category?            @relation("CategoriesRelation", fields: [pid], references: [cid])
+  children           Category[]           @relation("CategoriesRelation")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  CategoryPopularKwd CategoryPopularKwd[]
+}
+
+model Grade {
+  code      String   @id
+  gradeName String
+  gradeDesc String
+  level     Int      @default(100)
+  User      User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Keywords {
+  keyword            String               @id
+  isSeason           Boolean              @default(false)
+  isAdult            Boolean              @default(false)
+  isRestricted       Boolean              @default(false)
+  isSellProhibit     Boolean              @default(false)
+  isLowSearchVolume  Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Product            Product[]
+  CategoryPopularKwd CategoryPopularKwd[]
+}
+
+model Product {
+  date                String
+  name                String
+  totalSeller         Int      @default(0)
+  loPrice             Int      @default(0)
+  hiPrice             Int      @default(0)
+  avgPrice            Int      @default(0)
+  brandPercent        Int      @default(0)
+  totalSearch         Int      @default(0)
+  competitionRate     String?
+  productImg          String?
+  category            Json?
+  trandKwdByAge       Json?
+  trandKwdByGender    Json?
+  trandKwdByDevice    Json?
+  searchVolumeByMonth Json?
+  keywordInfo         Keywords @relation(fields: [name], references: [keyword])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([date, name])
+}
+
+model KeywordChart {
+  name                String   @id
+  trandKwdByAge       Json?
+  trandKwdByGender    Json?
+  trandKwdByDevice    Json?
+  searchVolumeByMonth Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model CategoryPopularKwd {
+  date         String
+  keyword      String
+  cid          Int
+  rank         Int?
+  categoryInfo Category @relation(fields: [cid], references: [cid])
+  keywordInfo  Keywords @relation(fields: [keyword], references: [keyword])
+
+  @@unique([date, keyword, cid])
+}
+
+model ProductMonitoring {
+  userId             String
+  storeProductNo     String
+  productUrl         String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User?               @relation(fields: [userId], references: [id])
+  monitoringKeywords MonitoringKeyword[]
+
+  @@unique([userId, storeProductNo])
+}
+
+model MonitoringKeyword {
+  id                    String                  @id @default(uuid())
+  userId                String
+  productNo             String
+  keyword               String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  productMonitoring     ProductMonitoring       @relation(fields: [userId, productNo], references: [userId, storeProductNo])
+  MonitoringKeywordRank MonitoringKeywordRank[]
+}
+
+model MonitoringKeywordRank {
+  date        String
+  keywordid   String
+  rank        Int               @default(-1)
+  page        Int               @default(-1)
+  index       Int               @default(-1)
+  adRank      Int               @default(-1)
+  adPage      Int               @default(-1)
+  adIndex     Int               @default(-1)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  keywordInfo MonitoringKeyword @relation(fields: [keywordid], references: [id])
+
+  @@unique([date, keywordid])
+}
+
+model StoreKeywordMonitoring {
+  id               String             @id @default(uuid())
+  userId           String?
+  storeName        String?
+  keyword          String?
+  User             User?              @relation(fields: [userId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  StoreKeywordRank StoreKeywordRank[]
+}
+
+model StoreKeywordRank {
+  id                   String
+  storeKwdMonitoringId String
+  isAd                 Boolean                 @default(false)
+  productId            String
+  productImg           String
+  productUrl           String
+  title                String
+  reviewCnt            Int
+  selesCnt             Int
+  seleStart            String
+  rank                 Int
+  page                 Int
+  index                Int
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  StoreMonitoring      StoreKeywordMonitoring? @relation(fields: [storeKwdMonitoringId], references: [id])
+
+  @@unique([id, storeKwdMonitoringId])
+}
