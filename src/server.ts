@@ -7,6 +7,8 @@ import express from "express";
 import { createServer } from "http";
 import { ContextValue } from "./modules/types";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-plugin-landing-page-graphql-playground";
+import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import cors from "cors";
@@ -15,6 +17,7 @@ import { expressMiddleware } from "@apollo/server/express4";
 import { NaverDataLabAPI } from "./api/naver/naverDataLabApi";
 import { NaverAdAPI } from "./api/naver/naverShopAdApi";
 import client from "./modules/client";
+import { getUser } from "./util/protectAccount";
 
 config();
 
@@ -44,6 +47,7 @@ async function ServerStart() {
   // definition and your set of resolvers.
   const server = new ApolloServer<ContextValue>({
     schema,
+    introspection: true,
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       {
@@ -71,7 +75,7 @@ async function ServerStart() {
         const { cache } = server;
         let user = null;
         if (req.headers?.token) {
-          // user = await getUser(req.headers?.token as string);
+          user = await getUser(client, req.headers?.token as string);
         }
         return {
           dataSources: {

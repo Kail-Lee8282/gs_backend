@@ -66,7 +66,9 @@ export class NaverDataLabAPI extends RESTDataSource {
     _path: string,
     request: AugmentedRequest
   ): void | Promise<void> {
-    request.headers = headers;
+    request.headers["X-Naver-Client-Id"] = process.env.NAVER_DEV_CLIENT_ID;
+    request.headers["X-Naver-Client-Secret"] =
+      process.env.NAVER_DEV_CLIENT_SECRET;
   }
   /**
    * 쇼핑 검색 결과 조회
@@ -98,11 +100,12 @@ export class NaverDataLabAPI extends RESTDataSource {
       };
 
       const urlParam = JSON.parse(JSON.stringify(data));
-
+      console.log(urlParam);
       return await this.get<NaverShop>("/v1/search/shop.json", {
         params: urlParam,
       });
     } catch (e) {
+      console.error("getShop", e.message);
       throw e;
     }
   }

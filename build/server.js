@@ -14,6 +14,7 @@ import { expressMiddleware } from "@apollo/server/express4";
 import { NaverDataLabAPI } from "./api/naver/naverDataLabApi";
 import { NaverAdAPI } from "./api/naver/naverShopAdApi";
 import client from "./modules/client";
+import { getUser } from "./util/protectAccount";
 config();
 const PORT = process.env.PORT;
 async function ServerStart() {
@@ -54,7 +55,7 @@ async function ServerStart() {
             const { cache } = server;
             let user = null;
             if (req.headers?.token) {
-                // user = await getUser(req.headers?.token as string);
+                user = await getUser(client, req.headers?.token);
             }
             return {
                 dataSources: {
