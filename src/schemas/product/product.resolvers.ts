@@ -1,3 +1,5 @@
+import { Resolver } from "../../modules/types";
+
 export type ProductCategory = {
   category1?: string;
   categoryCid1?: number;
@@ -92,13 +94,120 @@ export function finalCategory(category?: ProductCategory) {
   }
 }
 
-const resolvers = {
-  Query: {
-    getProduct: () => {
-      return {
-        ok: true,
-      };
+const fullCategory: Resolver<string> = ({
+  category1,
+  category2,
+  category3,
+  category4,
+}) => {
+  return fullPathCategory(category1, category2, category3, category4);
+};
+
+const percent: Resolver<number> = ({ display, count }) => {
+  return Math.round((count / display) * 100);
+};
+
+const categoryCid1: Resolver<number> = async (
+  { category1 },
+  _,
+  { dataSources: { productsDb: client } }
+) => {
+  const { cid } = await client.category.findFirst({
+    where: {
+      name: category1,
     },
+    select: {
+      cid: true,
+    },
+  });
+
+  return cid;
+};
+const categoryCid2: Resolver<number> = async (
+  { category2 },
+  _,
+  { dataSources: { productsDb: client } }
+) => {
+  const { cid } = await client.category.findFirst({
+    where: {
+      name: category2,
+    },
+    select: {
+      cid: true,
+    },
+  });
+
+  return cid;
+};
+const categoryCid3: Resolver<number> = async (
+  { category3 },
+  _,
+  { dataSources: { productsDb: client } }
+) => {
+  const { cid } = await client.category.findFirst({
+    where: {
+      name: category3,
+    },
+    select: {
+      cid: true,
+    },
+  });
+
+  return cid;
+};
+const categoryCid4: Resolver<number> = async (
+  { category4 },
+  _,
+  { dataSources: { productsDb: client } }
+) => {
+  const { cid } = await client.category.findFirst({
+    where: {
+      name: category4,
+    },
+    select: {
+      cid: true,
+    },
+  });
+
+  return cid;
+};
+
+const getProductCid: Resolver<number> = async (
+  { category },
+  _,
+  { dataSources: { productsDb: client } }
+) => {
+  const info = category as ProductCategory[];
+
+  if (info && info.length > 0) {
+    const name = finalCategory(info[0]);
+    const { cid } = await client.category.findFirst({
+      where: {
+        name,
+      },
+      select: {
+        cid: true,
+      },
+    });
+
+    return cid;
+  }
+
+  return 0;
+};
+
+const resolvers = {
+  ProductCategory: {
+    fullCategory,
+    percent,
+    categoryCid1,
+    categoryCid2,
+    categoryCid3,
+    categoryCid4,
+  },
+
+  Product: {
+    cid: getProductCid,
   },
 };
 

@@ -47,8 +47,6 @@ const me: Resolver<MeResult> = async (
       };
     }
 
-    console.log("me");
-
     return {
       state: {
         ok: true,

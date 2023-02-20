@@ -77,26 +77,44 @@ type GetCategoriesParameta = {
  * DB 카테고리 데이터를 가지고옴
  * @returns
  */
-const getCategories: Resolver = (
+const getCategories: Resolver = async (
   _,
   { cid }: GetCategoriesParameta,
   { dataSources: { productsDb: client } }
-) =>
-  client.category.findUnique({
-    where: {
-      cid,
-    },
-    include: {
-      children: true,
-      parent: {
-        select: {
-          cid: true,
-          name: true,
-          pid: true,
+) => {
+  try {
+    const data = await client.category.findUnique({
+      where: {
+        cid,
+      },
+      include: {
+        children: true,
+        parent: {
+          select: {
+            cid: true,
+            name: true,
+            pid: true,
+          },
         },
       },
-    },
-  });
+    });
+
+    return {
+      state: {
+        ok: true,
+      },
+      result: data,
+    };
+  } catch (e) {
+    return {
+      state: {
+        ok: false,
+        code: ErrCode.unknownErr,
+        message: e.message,
+      },
+    };
+  }
+};
 
 const resolvers = {
   Category: {

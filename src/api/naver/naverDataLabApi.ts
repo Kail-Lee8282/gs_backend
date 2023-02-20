@@ -1,4 +1,5 @@
 import { AugmentedRequest, RESTDataSource } from "@apollo/datasource-rest";
+import { Sleep } from "../../util/sleep";
 
 const headers = {
   "X-Naver-Client-Id": process.env.NAVER_DEV_CLIENT_ID,
@@ -59,6 +60,23 @@ export type NaverKeywordTrandResults = {
   data: NaverKeywordTrandByTypeResult[];
 };
 
+type RetryResult = {
+  cnt: number;
+  result: any;
+  err?: any;
+};
+function retry(n: number, promise: Promise<any>): Promise<RetryResult> {
+  return new Promise((resolver, reject) => {
+    promise
+      .then((res) => resolver({ cnt: n, result: res }))
+      .catch((err) => {
+        if (n >= 5) return { cnt: n, result: null, err };
+        Sleep(300);
+        return retry(n + 1, promise.then(resolver).catch(reject));
+      });
+  });
+}
+
 export class NaverDataLabAPI extends RESTDataSource {
   override baseURL = "https://openapi.naver.com";
 
@@ -100,10 +118,20 @@ export class NaverDataLabAPI extends RESTDataSource {
       };
 
       const urlParam = JSON.parse(JSON.stringify(data));
-      console.log(urlParam);
-      return await this.get<NaverShop>("/v1/search/shop.json", {
-        params: urlParam,
-      });
+      // return await this.get<NaverShop>("/v1/search/shop.json", {
+      //   params: urlParam,
+      // });
+
+      const result = await retry(
+        0,
+        this.get<NaverShop>("/v1/search/shop.json", {
+          params: urlParam,
+        })
+      );
+
+      if (result.err) console.log("try cnt", result.cnt, result.err);
+
+      return result.result as NaverShop;
     } catch (e) {
       console.error("getShop", e.message);
       throw e;

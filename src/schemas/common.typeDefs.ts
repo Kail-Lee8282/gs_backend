@@ -6,4 +6,8 @@ export default `#graphql
         message:String
     }
 
+    type Result {
+        state:State!
+    }
+
 `;

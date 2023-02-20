@@ -43,7 +43,4 @@ type Product {
     category:[ProductCategory]
 }
 
-type Query {
-    getProduct:State!
-}
 `;

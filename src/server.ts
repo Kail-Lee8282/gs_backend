@@ -24,76 +24,80 @@ config();
 const PORT = process.env.PORT;
 
 async function ServerStart() {
-  // Passing an ApolloServer instance to the `startStandaloneServer` function:
-  //  1. creates an Express app
-  const app = express();
+  try {
+    // Passing an ApolloServer instance to the `startStandaloneServer` function:
+    //  1. creates an Express app
+    const app = express();
 
-  //  2. installs your ApolloServer instance as middleware
+    //  2. installs your ApolloServer instance as middleware
 
-  //  3. prepares your app to handle incoming requests
-  const httpServer = createServer(app);
+    //  3. prepares your app to handle incoming requests
+    const httpServer = createServer(app);
 
-  const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers,
-  });
+    const schema = makeExecutableSchema({
+      typeDefs,
+      resolvers,
+    });
 
-  const wsServer = new WebSocketServer({
-    server: httpServer,
-  });
+    const wsServer = new WebSocketServer({
+      server: httpServer,
+    });
 
-  const serverCleanup = useServer({ schema }, wsServer);
+    const serverCleanup = useServer({ schema }, wsServer);
 
-  // definition and your set of resolvers.
-  const server = new ApolloServer<ContextValue>({
-    schema,
-    introspection: true,
-    plugins: [
-      ApolloServerPluginDrainHttpServer({ httpServer }),
-      {
-        async serverWillStart() {
+    // definition and your set of resolvers.
+    const server = new ApolloServer<ContextValue>({
+      schema,
+      introspection: true,
+      plugins: [
+        ApolloServerPluginDrainHttpServer({ httpServer }),
+        {
+          async serverWillStart() {
+            return {
+              async drainServer() {
+                await serverCleanup.dispose();
+              },
+            };
+          },
+        },
+      ],
+    });
+
+    const port = Number(PORT && PORT.length > 0 ? PORT : 4000);
+
+    await server.start();
+
+    app.use(
+      "/",
+      cors<cors.CorsRequest>(),
+      bodyParser.json(),
+      expressMiddleware(server, {
+        context: async ({ req }) => {
+          const { cache } = server;
+          let user = null;
+          if (req.headers?.token) {
+            user = await getUser(client, req.headers?.token as string);
+          }
           return {
-            async drainServer() {
-              await serverCleanup.dispose();
+            dataSources: {
+              naverDataLabAPI: new NaverDataLabAPI({ cache }),
+              naverAdAPI: new NaverAdAPI({
+                cache,
+              }),
+              productsDb: client,
             },
+            loginUser: user,
           };
         },
-      },
-    ],
-  });
+      })
+    );
 
-  const port = Number(PORT && PORT.length > 0 ? PORT : 4000);
-
-  await server.start();
-
-  app.use(
-    "/",
-    cors<cors.CorsRequest>(),
-    bodyParser.json(),
-    expressMiddleware(server, {
-      context: async ({ req }) => {
-        const { cache } = server;
-        let user = null;
-        if (req.headers?.token) {
-          user = await getUser(client, req.headers?.token as string);
-        }
-        return {
-          dataSources: {
-            naverDataLabAPI: new NaverDataLabAPI({ cache }),
-            naverAdAPI: new NaverAdAPI({
-              cache,
-            }),
-            productsDb: client,
-          },
-          loginUser: user,
-        };
-      },
-    })
-  );
-
-  httpServer.listen({ port }, () => {
-    console.log(`🚀  Server ready at: http://localhost:${port}`);
-  });
+    httpServer.listen({ port }, () => {
+      console.log(`🚀  Server ready at: http://localhost:${port}`);
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 ServerStart();

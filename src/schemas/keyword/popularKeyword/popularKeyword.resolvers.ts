@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import {
   getKeywordRanks,
   NaverKeywordRankInfo,
-} from "../../../api/naver/crawling/KeywordRanks";
+} from "../../../api/naver/crawling/keywordRanks";
 import { ContextValue, Resolver } from "../../../modules/types";
 import {
   dateToString,

@@ -18,7 +18,7 @@ type ResolverResult = {
   result?: any;
 };
 
-export type Resolver<T = ResolverResult | any> = (
+export type Resolver<T = ResolverResult> = (
   root: any,
   args: any,
   context: ContextValue,

@@ -19,7 +19,7 @@ export default `#graphql
 
 
     type Query {
-        getCategories(cid:Int!):Category
+        getCategories(cid:Int!):CategoriesResult!
     }
 
 `;

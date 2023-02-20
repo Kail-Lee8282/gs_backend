@@ -1,3 +1,4 @@
+import { loadFiles } from "@graphql-tools/load-files";
 import { Prisma } from "@prisma/client";
 import { Worker } from "worker_threads";
 import { ContextValue } from "../../../modules/types";
@@ -7,8 +8,97 @@ import {
   Product,
   ProductCategory,
 } from "../product.resolvers";
+import { StartDir } from "../../../dirPath";
 
-const t_insertProduct = new Worker("./src/woker/insert.product.worker.ts");
+const insertProductWorkerPath = await loadFiles(
+  `${StartDir()}/worker/insert.product.worker.{ts,js}`,
+  {
+    requireMethod: async (path) => {
+      return path;
+    },
+  }
+);
+
+const t_insertProduct = new Worker(insertProductWorkerPath[0]);
+
+/**
+ * 제품 등록 및 생성
+ * @param keyword
+ * @param client
+ * @param naverAdAPI
+ * @returns
+ */
+export async function createSelectProductInfo(
+  keyword: string,
+  context: ContextValue
+): Promise<Product> {
+  try {
+    const {
+      dataSources: { productsDb: client },
+    } = context;
+    if (!keyword || keyword.length <= 0) throw "not exist keyword";
+
+    const date = upDateToString(nowKrDate());
+    const upperKwd = keyword.toUpperCase();
+    const findProduct = await client.product.findFirst({
+      where: {
+        date,
+        name: upperKwd,
+      },
+      include: {
+        keywordInfo: {
+          select: {
+            isAdult: true,
+            isLowSearchVolume: true,
+            isRestricted: true,
+            isSeason: true,
+            isSellProhibit: true,
+          },
+        },
+      },
+    });
+
+    // DB 데이터 있을 경우
+    if (findProduct) {
+      console.log(findProduct.date, "find", upperKwd);
+
+      return {
+        date: findProduct.date,
+        name: findProduct.name,
+        totalSeller: findProduct.totalSeller,
+        totalSearch: findProduct.totalSearch,
+        productImg: findProduct.productImg,
+        loPrice: findProduct.loPrice,
+        hiPrice: findProduct.hiPrice,
+        avgPrice: findProduct.avgPrice,
+        competitionRate: findProduct.competitionRate,
+        brandPercent: findProduct.brandPercent,
+        isAdult: findProduct.keywordInfo.isAdult,
+        isLowSearchVolume: findProduct.keywordInfo.isLowSearchVolume,
+        isRestricted: findProduct.keywordInfo.isRestricted,
+        isSeason: findProduct.keywordInfo.isSeason,
+        isSellProhibit: findProduct.keywordInfo.isSellProhibit,
+        category: findProduct.category as ProductCategory[],
+        // trandKwdByAge: ConvertToProductChartDataArray(
+        //   findProduct.trandKwdByAge
+        // ),
+        // trandKwdByDevice: ConvertToProductChartDataArray(
+        //   findProduct.trandKwdByDevice
+        // ),
+        // trandKwdByGender: ConvertToProductChartDataArray(
+        //   findProduct.trandKwdByGender
+        // ),
+      };
+    }
+
+    const product = await InsertProduct(keyword, context);
+
+    return product;
+  } catch (e) {
+    console.error(keyword, e);
+    return null;
+  }
+}
 
 export async function InsertProduct(
   kwd: string,

@@ -13,6 +13,8 @@ export const ErrCode = {
   existEmail: "E0005",
   /** 권한없는 사용자 */
   withoutPermission: "E006",
+  /** 데이터를 찾을수 없음 */
+  notFoundData: "E007",
   /** 알수없는 오류 */
   unknownErr: "E9999",
 };
