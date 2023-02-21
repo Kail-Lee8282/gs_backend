@@ -36,22 +36,13 @@ export const getUser = async (client: PrismaClient, token: string) => {
 export function loginCheckResovler(ourResolver: Resolver) {
   return function (root: any, args: any, context: ContextValue, info: any) {
     if (!context.loginUser) {
-      // const query = info.operation.operation === "query";
-      // if (query) {
       return {
         state: {
           ok: false,
-          error: "Please login to perform this action",
+          code: ErrCode.notLogin,
+          message: "Please login to perform this action",
         },
       };
-      // } else {
-      //   return {
-      //     state: {
-      //       ok: false,
-      //       error: "Please login to perform this action",
-      //     },
-      //   };
-      // }
     }
     return ourResolver(root, args, context, info);
   };

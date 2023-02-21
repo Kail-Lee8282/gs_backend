@@ -6,9 +6,13 @@ import {
   nowKrDate,
   upDateToString,
 } from "../../../util/dateToString";
+import { ProductQueryAct } from "../../../worker/insert.product.worker";
 import { State } from "../../common.resolvers";
 import { ErrCode } from "../../schemaErrCode";
-import { createSelectProductInfo } from "../addProduct/addProduct.resolvers";
+import {
+  createSelectProductInfo,
+  t_insertProduct,
+} from "../addProduct/addProduct.resolvers";
 import { ProductChartData, Product } from "../product.resolvers";
 
 type SeeProductParam = {
@@ -78,12 +82,14 @@ const seeProduct: Resolver<SeeProductResult> = async (
     if (kwd.length <= 0) throw "not exist keyword";
 
     const keyword = (kwd as string).toUpperCase();
+
     // DB에 금일 검색 결과 있는지 체크
     const findProduct = await createSelectProductInfo(keyword, context);
 
     // 2년 검색량
     let searchVolume: ProductChartData[] = [];
     if (findProduct) {
+      console.log(findProduct.searchVolumeByMonth);
       if (!findProduct.searchVolumeByMonth) {
         const before2Y = CalcNowDate(-2, 0, 0);
 
@@ -104,26 +110,34 @@ const seeProduct: Resolver<SeeProductResult> = async (
           results
         );
 
-        await context.dataSources.productsDb.product.update({
-          where: {
-            date_name: {
-              date: findProduct.date,
-              name: findProduct.name,
+        const message: ProductQueryAct = {
+          type: "U",
+          date: findProduct.date,
+          keyword: findProduct.name,
+          query: {
+            where: {
+              date_name: {
+                date: findProduct.date,
+                name: findProduct.name,
+              },
+            },
+            data: {
+              searchVolumeByMonth: searchVolume as Prisma.JsonArray,
             },
           },
-          data: {
-            searchVolumeByMonth: searchVolume as Prisma.JsonArray,
-          },
-        });
+        };
+        t_insertProduct.postMessage(message);
       }
 
-      return {
+      const result = {
         state: {
           ok: true,
           code: ErrCode.success,
         },
         result: { ...findProduct, searchVolumeByMonth: searchVolume },
       };
+
+      return result;
     }
 
     return {
@@ -134,9 +148,12 @@ const seeProduct: Resolver<SeeProductResult> = async (
       },
     };
   } catch (e) {
+    console.error("seeProduct", e);
     return {
       state: {
-        ok: true,
+        ok: false,
+        code: ErrCode.unknownErr,
+        message: e.message,
       },
     };
   }

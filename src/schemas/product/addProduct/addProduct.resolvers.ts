@@ -9,6 +9,7 @@ import {
   ProductCategory,
 } from "../product.resolvers";
 import { StartDir } from "../../../dirPath";
+import { ProductQueryAct } from "../../../worker/insert.product.worker";
 
 const insertProductWorkerPath = await loadFiles(
   `${StartDir()}/worker/insert.product.worker.{ts,js}`,
@@ -19,7 +20,7 @@ const insertProductWorkerPath = await loadFiles(
   }
 );
 
-const t_insertProduct = new Worker(insertProductWorkerPath[0]);
+export const t_insertProduct = new Worker(insertProductWorkerPath[0]);
 
 /**
  * 제품 등록 및 생성
@@ -191,6 +192,8 @@ export async function InsertProduct(
       const brandPercent = Math.round((brandCnt / itemCount) * 100);
 
       const productData = {
+        date,
+        name: keyword,
         totalSeller: shop.total,
         totalSearch: pcQcCnt + moQcCnt,
         loPrice: lowPrice,
@@ -200,39 +203,58 @@ export async function InsertProduct(
         competitionRate: find.compIdx,
         productImg,
         category: categories,
+        isAdult: managedKwd?.isAdult,
+        isSeason: managedKwd?.isSeason,
+        isLowSearchVolume: managedKwd?.isLowSearchVolume,
+        isRestricted: managedKwd?.isRestricted,
+        isSellProhibit: managedKwd?.isSellProhibit,
       } as Product;
 
-      const insertData = {
+      const message: ProductQueryAct = {
+        type: "I",
+        date,
         keyword,
-        create: {
-          date,
-          ...productData,
-          category: categories as Prisma.JsonArray,
-          keywordInfo: {
-            connectOrCreate: {
-              create: {
-                keyword: keyword,
-                isAdult: managedKwd?.isAdult,
-                isSeason: managedKwd?.isSeason,
-                isLowSearchVolume: managedKwd?.isLowSearchVolume,
-                isRestricted: managedKwd?.isRestricted,
-                isSellProhibit: managedKwd?.isSellProhibit,
+        query: {
+          create: {
+            date: productData.date,
+            totalSeller: productData.totalSeller,
+            totalSearch: productData.totalSearch,
+            loPrice: productData.loPrice,
+            hiPrice: productData.hiPrice,
+            avgPrice: productData.avgPrice,
+            brandPercent: productData.brandPercent,
+            competitionRate: productData.competitionRate,
+            productImg: productData.productImg,
+            category: productData.category as Prisma.JsonArray,
+            keywordInfo: {
+              connectOrCreate: {
+                create: {
+                  keyword: productData.name,
+                  isAdult: productData.isAdult,
+                  isSeason: productData.isSeason,
+                  isLowSearchVolume: productData.isLowSearchVolume,
+                  isRestricted: productData.isRestricted,
+                  isSellProhibit: productData.isSellProhibit,
+                },
+                where: {
+                  keyword: keyword,
+                },
               },
-              where: {
-                keyword: keyword,
-              },
+            },
+          },
+          update: {},
+          where: {
+            date_name: {
+              date: date,
+              name: keyword,
             },
           },
         },
       };
 
-      t_insertProduct.postMessage(insertData);
+      t_insertProduct.postMessage(message);
 
-      return {
-        date: insertData.create.date,
-        name: kwd,
-        ...productData,
-      };
+      return productData;
     } else {
       return {
         date: product.date,

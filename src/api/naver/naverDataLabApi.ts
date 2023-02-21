@@ -1,4 +1,5 @@
 import { AugmentedRequest, RESTDataSource } from "@apollo/datasource-rest";
+import { retry } from "../../modules/retry";
 import { Sleep } from "../../util/sleep";
 
 const headers = {
@@ -59,23 +60,6 @@ export type NaverKeywordTrandResults = {
   keywords: string[];
   data: NaverKeywordTrandByTypeResult[];
 };
-
-type RetryResult = {
-  cnt: number;
-  result: any;
-  err?: any;
-};
-function retry(n: number, promise: Promise<any>): Promise<RetryResult> {
-  return new Promise((resolver, reject) => {
-    promise
-      .then((res) => resolver({ cnt: n, result: res }))
-      .catch((err) => {
-        if (n >= 5) return { cnt: n, result: null, err };
-        Sleep(300);
-        return retry(n + 1, promise.then(resolver).catch(reject));
-      });
-  });
-}
 
 export class NaverDataLabAPI extends RESTDataSource {
   override baseURL = "https://openapi.naver.com";
