@@ -9,12 +9,12 @@ import {
   MonitoringProduct,
 } from "../monitoring.resolvers";
 
-type SeeProductMonitoringItemsResult = {
+type SeeProductsMonitoringResult = {
   state: State;
   result?: MonitoringProduct[];
 };
 
-const seeMonitoringItems: Resolver<SeeProductMonitoringItemsResult> = async (
+const seeProductsMonitoring: Resolver<SeeProductsMonitoringResult> = async (
   _,
   __,
   { dataSources: { productsDb: client }, loginUser }
@@ -115,7 +115,7 @@ const seeMonitoringItems: Resolver<SeeProductMonitoringItemsResult> = async (
 
 const resolvers = {
   Query: {
-    seeMonitoringItems: loginCheckResovler(seeMonitoringItems),
+    seeProductsMonitoring: loginCheckResovler(seeProductsMonitoring),
   },
 };
 

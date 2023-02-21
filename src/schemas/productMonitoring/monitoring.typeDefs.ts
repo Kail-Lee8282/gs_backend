@@ -1,4 +1,17 @@
-export default `#graphql 
+export default `#graphql
+
+    type MonitoringKeywordRank {
+        date: String
+        index: Int
+        page: Int
+        rank: Int
+        adIndex:Int
+        adPage:Int
+        adRank:Int
+        id: String
+        updateAt: String
+    }
+
 
 
     type MonitoringKeyword {
@@ -24,12 +37,7 @@ export default `#graphql
         keywords:[MonitoringKeyword]
     }
 
-    type SeeProductMonitoringItemsResult {
-        state:State!
-        result:[MonitoringProduct]
-    }
-
-    type Query{
-        seeMonitoringItems:SeeProductMonitoringItemsResult!
+    type Query {
+        getProductDisplayLocation:Result!
     }
 `;

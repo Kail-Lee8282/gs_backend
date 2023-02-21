@@ -6,11 +6,11 @@ import { State } from "../../common.resolvers";
 import { ErrCode } from "../../schemaErrCode";
 import { getProductDisplayPosition } from "../monitoring.resolvers";
 
-type AddMonitoringItemParam = {
+type AddProductMonitoringParam = {
   uri: string;
 };
 
-type AddMonitoringItemResult = {
+type AddProductMonitoringResult = {
   state: State;
   result?: {
     id: string;
@@ -24,9 +24,9 @@ const NAVER_SMART_STORE_URL_PATTERN =
  * 모니터링 할 제품 등록
  * @returns
  */
-const addMonitoringItem: Resolver<AddMonitoringItemResult> = async (
+const addProductMonitoring: Resolver<AddProductMonitoringResult> = async (
   _,
-  { uri }: AddMonitoringItemParam,
+  { uri }: AddProductMonitoringParam,
   { dataSources: { productsDb: client }, loginUser }
 ) => {
   try {
@@ -149,7 +149,7 @@ const addMonitoringItem: Resolver<AddMonitoringItemResult> = async (
 
 const resolvers = {
   Mutation: {
-    addMonitoringItem: loginCheckResovler(addMonitoringItem),
+    addProductMonitoring: loginCheckResovler(addProductMonitoring),
   },
 };
 

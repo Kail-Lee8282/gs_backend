@@ -5,11 +5,11 @@ import { State } from "../../common.resolvers";
 import { ErrCode } from "../../schemaErrCode";
 import { MonitoringKeyword, MonitoringProduct } from "../monitoring.resolvers";
 
-type SeeMonitoringItemParam = {
+type SeeProductMonitoringParam = {
   productNo: string;
 };
 
-type SeeMonitoringItemResult = {
+type SeeProductMonitoringResult = {
   state: State;
   result?: MonitoringProduct;
 };
@@ -17,9 +17,9 @@ type SeeMonitoringItemResult = {
  * 모니터링 아이템 상세 정보 조회
  * @returns
  */
-const seeMonitoringItem: Resolver<SeeMonitoringItemResult> = async (
+const seeProductMonitoring: Resolver<SeeProductMonitoringResult> = async (
   _,
-  { productNo }: SeeMonitoringItemParam,
+  { productNo }: SeeProductMonitoringParam,
   { dataSources: { productsDb: client }, loginUser }
 ) => {
   try {
@@ -136,7 +136,7 @@ const seeMonitoringItem: Resolver<SeeMonitoringItemResult> = async (
 
 const resolvers = {
   Query: {
-    seeMonitoringItem: loginCheckResovler(seeMonitoringItem),
+    seeProductMonitoring: loginCheckResovler(seeProductMonitoring),
   },
 };
 
