@@ -14,8 +14,8 @@ export type MonitoringProduct = {
   productNo: string; // 제품 코드
   reviewCount: number; // 리뷰 개수
   reviewScore: number; // 리뷰 평점
-  cumulationSaleCount: number; // 6개월 판매개 수
-  recentSaleCount: number; //3일 판개 개수
+  cumulationSaleCount?: number; // 6개월 판매개 수
+  recentSaleCount?: number; //3일 판개 개수
   storeName: string; // 스토어 명
   salePrice: number; //실제 판매 가격 PC - 할일율 적용
   mobileSalePrice: number; // 실제 판매 가격 모바일 - 할인율 적용

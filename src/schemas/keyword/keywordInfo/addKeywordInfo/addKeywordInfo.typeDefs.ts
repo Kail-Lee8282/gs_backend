@@ -1,6 +1,6 @@
 export default `#graphql
 
     type Mutation {
-        addProduct:State!
+        addKeywordInfo(keyword:String!):Result!
     }
 `;

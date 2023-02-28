@@ -5,13 +5,22 @@ type RetryResult = {
   result: any;
   err?: any;
 };
-export function retry(n: number, promise: Promise<any>): Promise<RetryResult> {
+export async function retry(
+  n: number,
+  promise: Promise<any>
+): Promise<RetryResult> {
   return new Promise((resolver, reject) => {
     promise
-      .then((res) => resolver({ cnt: n, result: res }))
-      .catch((err) => {
-        if (n >= 5) return { cnt: n, result: null, err };
-        Sleep(300);
+      .then((res) => {
+        resolver({ cnt: n, result: res });
+      })
+      .catch(async (err) => {
+        console.error("retry : ", n);
+        if (n >= 5) {
+          return { cnt: n, result: null, err };
+        }
+        await Sleep(300);
+        console.log("try");
         return retry(n + 1, promise.then(resolver).catch(reject));
       });
   });

@@ -100,6 +100,8 @@ const updateKeywordMonitoring: Resolver<UpdateKwdMonitoringResult> = async (
       }
     });
 
+    console.log(findData);
+
     // DB 과 요청한 웹에 데이터가 없을 경우
     if (upsetData.length <= 0) {
       console.log("not exist update data");

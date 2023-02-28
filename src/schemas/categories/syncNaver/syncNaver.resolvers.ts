@@ -10,7 +10,7 @@ type SyncNaverCategoriesParameta = {
 };
 
 async function InsertNaverCategory(cid: number, client: PrismaClient) {
-  await Sleep(300);
+  await Sleep(200);
   // 네이버 cid 해당하는 카테고리 정보를 조회
   const root = await getCategoriesFormNaver(cid);
   if (root.data && root.data.childList && root.data.childList.length > 0) {
@@ -21,7 +21,6 @@ async function InsertNaverCategory(cid: number, client: PrismaClient) {
         pid: item.pid,
       };
     });
-    console.log(param);
 
     await client.category.createMany({
       data: param,
@@ -48,8 +47,6 @@ const syncNaverCategories: Resolver = async (
   { dataSources: { productsDb } }
 ) => {
   try {
-    console.log(cid);
-
     await InsertNaverCategory(cid, productsDb);
 
     return {

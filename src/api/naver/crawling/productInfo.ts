@@ -28,7 +28,7 @@ type NaverSimpleProductResponse = {
     discountedSalePrice: number;
     mobileDiscountedSalePrice: number;
   };
-  saleAmount: {
+  saleAmount?: {
     cumulationSaleCount: number;
     recentSaleCount: number;
   };

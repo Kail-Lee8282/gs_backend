@@ -1,5 +1,7 @@
 import { RESTDataSource } from "@apollo/datasource-rest";
 import crypto from "crypto";
+import promiseRetry from "promise-retry";
+import { Sleep } from "../../util/sleep";
 
 type RelKwdStat = {
   relKeyword: string;
@@ -54,43 +56,40 @@ export class NaverAdAPI extends RESTDataSource {
     showDetail?: number
   ): Promise<RelKwdStatResult> {
     try {
-      if (this.requestCnt) {
-        await new Promise((r) => setTimeout(r, 300));
-        return this.getRelKwdStat(hintKeywords, event, month, showDetail);
-      } else {
-        this.requestCnt = true;
-        const now = Date.now() + "";
-        const reqUri = "/keywordstool";
+      const now = Date.now() + "";
+      const reqUri = "/keywordstool";
 
-        const data = {
-          hintKeywords,
-          event: event === undefined ? "" : event + "",
-          month: month === undefined ? "" : month + "",
-          showDetail: showDetail === undefined ? "" : showDetail + "",
-        };
+      const data = {
+        hintKeywords,
+        event: event === undefined ? "" : event + "",
+        month: month === undefined ? "" : month + "",
+        showDetail: showDetail === undefined ? "" : showDetail + "",
+      };
 
-        await new Promise((r) => setTimeout(r, 300));
-        // 서명
-        const res = await this.get<RelKwdStatResult>(reqUri, {
-          headers: {
-            "X-Timestamp": now,
-            "X-API-KEY": process.env.NAVER_API_LICENSE_KEY,
-            "X-Customer": process.env.NAVER_CUSTMER_ID,
-            "X-Signature": createSignauture(now, "GET", reqUri),
-            "Content-Type": "application/json",
-          },
+      return await promiseRetry(
+        (retry, number) => {
+          return this.get<RelKwdStatResult>(reqUri, {
+            headers: {
+              "X-Timestamp": now,
+              "X-API-KEY": process.env.NAVER_API_LICENSE_KEY,
+              "X-Customer": process.env.NAVER_CUSTMER_ID,
+              "X-Signature": createSignauture(now, "GET", reqUri),
+              "Content-Type": "application/json",
+            },
 
-          params: data,
-        });
-
-        this.requestCnt = false;
-        return res;
-      }
+            params: data,
+          }).catch(retry);
+        },
+        {
+          retries: 5,
+        }
+      );
     } catch (e) {
       console.error(hintKeywords, "getRelKwdStat", e);
       return null;
     }
   }
+
   async getManagedKeywordList(keyword: string) {
     try {
       const now = Date.now() + "";

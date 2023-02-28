@@ -1,4 +1,5 @@
 import axios from "axios";
+import { retry } from "../../../modules/retry";
 
 type NaverCategoryResponse = {
   cid: number;
@@ -12,19 +13,29 @@ type NaverCategoryResponse = {
  * @param cid 카테고리 ID
  * @returns
  */
-export function getCategoriesFormNaver(cid: number) {
+export async function getCategoriesFormNaver(cid: number) {
   try {
-    return axios.get<NaverCategoryResponse>(
-      "https://datalab.naver.com/shoppingInsight/getCategory.naver",
-      {
-        params: {
-          cid,
-        },
-        headers: {
-          referer: "https://datalab.naver.com/shoppingInsight/sCategory.naver",
-        },
-      }
+    const result = await retry(
+      0,
+      new Promise(async (resolve) => {
+        const data = await axios.get<NaverCategoryResponse>(
+          "https://datalab.naver.com/shoppingInsight/getCategory.naver",
+          {
+            params: {
+              cid,
+            },
+            headers: {
+              referer:
+                "https://datalab.naver.com/shoppingInsight/sCategory.naver",
+            },
+          }
+        );
+
+        resolve(data);
+      })
     );
+
+    return result.result;
   } catch (e) {
     console.error(e);
     return undefined;

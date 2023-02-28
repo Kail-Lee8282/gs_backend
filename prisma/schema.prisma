@@ -45,22 +45,13 @@ model Grade {
   updatedAt DateTime @updatedAt
 }
 
-model Keywords {
-  keyword            String               @id
-  isSeason           Boolean              @default(false)
-  isAdult            Boolean              @default(false)
-  isRestricted       Boolean              @default(false)
-  isSellProhibit     Boolean              @default(false)
-  isLowSearchVolume  Boolean              @default(false)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  Product            Product[]
-  CategoryPopularKwd CategoryPopularKwd[]
-}
-
-model Product {
-  date                String
-  name                String
+model KeywordInfo {
+  keyword             String   @id
+  isSeason            Boolean  @default(false)
+  isAdult             Boolean  @default(false)
+  isRestricted        Boolean  @default(false)
+  isSellProhibit      Boolean  @default(false)
+  isLowSearchVolume   Boolean  @default(false)
   totalSeller         Int      @default(0)
   loPrice             Int      @default(0)
   hiPrice             Int      @default(0)
@@ -74,11 +65,8 @@ model Product {
   trandKwdByGender    Json?
   trandKwdByDevice    Json?
   searchVolumeByMonth Json?
-  keywordInfo         Keywords @relation(fields: [name], references: [keyword])
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
-
-  @@unique([date, name])
 }
 
 model KeywordChart {
@@ -97,7 +85,6 @@ model CategoryPopularKwd {
   cid          Int
   rank         Int?
   categoryInfo Category @relation(fields: [cid], references: [cid])
-  keywordInfo  Keywords @relation(fields: [keyword], references: [keyword])
 
   @@unique([date, keyword, cid])
 }

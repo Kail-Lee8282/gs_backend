@@ -18,6 +18,10 @@ import { NaverDataLabAPI } from "./api/naver/naverDataLabApi";
 import { NaverAdAPI } from "./api/naver/naverShopAdApi";
 import client from "./modules/client";
 import { getUser } from "./util/protectAccount";
+import { dateTimeToString, dateToString } from "./util/dateToString";
+import { getProductDisplayPosition } from "./schemas/productMonitoring/monitoring.resolvers";
+import { updateTodayProductMonitoring } from "./schedule/updateTodayProductMonitoring";
+import { updateTodayPopularKeyword } from "./schedule/updateTodayPopularKeyword";
 
 config();
 
@@ -101,3 +105,35 @@ async function ServerStart() {
 }
 
 ServerStart();
+
+scheduler();
+
+async function scheduler() {
+  new Promise(async () => {
+    let count = 0;
+    let updateDate = "";
+    while (true) {
+      try {
+        console.log(count, dateTimeToString(new Date()));
+        console.log("now Hours", new Date().getHours());
+        // 12시 갱신
+        if (
+          updateDate !== dateToString(new Date()) &&
+          new Date().getHours() === 16
+        ) {
+          console.log("update start");
+          await updateTodayProductMonitoring();
+          // await updateTodayPopularKeyword();
+          updateDate = dateToString(new Date());
+
+          console.log("update complated");
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      count++;
+      await new Promise((r) => setTimeout(r, 600000));
+    }
+  });
+}
