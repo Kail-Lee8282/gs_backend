@@ -7,8 +7,6 @@ import express from "express";
 import { createServer } from "http";
 import { ContextValue } from "./modules/types";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-plugin-landing-page-graphql-playground";
-import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import cors from "cors";
@@ -19,11 +17,12 @@ import { NaverAdAPI } from "./api/naver/naverShopAdApi";
 import client from "./modules/client";
 import { getUser } from "./util/protectAccount";
 import { dateTimeToString, dateToString } from "./util/dateToString";
-import { getProductDisplayPosition } from "./schemas/productMonitoring/monitoring.resolvers";
 import { updateTodayProductMonitoring } from "./schedule/updateTodayProductMonitoring";
-import { updateTodayPopularKeyword } from "./schedule/updateTodayPopularKeyword";
+import { bootstrap } from "global-agent";
 
 config();
+
+bootstrap();
 
 const PORT = process.env.PORT;
 
@@ -115,11 +114,11 @@ async function scheduler() {
     while (true) {
       try {
         console.log(count, dateTimeToString(new Date()));
-        console.log("now Hours", new Date().getHours());
+        console.log("now Hours", new Date().getUTCHours());
         // 12시 갱신
         if (
           updateDate !== dateToString(new Date()) &&
-          new Date().getHours() === 16
+          new Date().getUTCHours() + 9 === 12
         ) {
           console.log("update start");
           await updateTodayProductMonitoring();

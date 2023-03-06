@@ -27,6 +27,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "global-agent": "^3.0.0",
     "graphql": "^16.6.0",
     "graphql-ws": "^5.11.3",
     "jsonwebtoken": "^9.0.0",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.13",
+    "@types/global-agent": "^2.1.1",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.13.0",
     "@types/promise-retry": "^1.1.3",

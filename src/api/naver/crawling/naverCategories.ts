@@ -1,5 +1,7 @@
 import axios from "axios";
+import promiseRetry from "promise-retry";
 import { retry } from "../../../modules/retry";
+import { Sleep } from "../../../util/sleep";
 
 type NaverCategoryResponse = {
   cid: number;
@@ -15,27 +17,29 @@ type NaverCategoryResponse = {
  */
 export async function getCategoriesFormNaver(cid: number) {
   try {
-    const result = await retry(
-      0,
-      new Promise(async (resolve) => {
-        const data = await axios.get<NaverCategoryResponse>(
-          "https://datalab.naver.com/shoppingInsight/getCategory.naver",
-          {
-            params: {
-              cid,
-            },
-            headers: {
-              referer:
-                "https://datalab.naver.com/shoppingInsight/sCategory.naver",
-            },
-          }
-        );
-
-        resolve(data);
-      })
+    const data = await promiseRetry(
+      async (retry, number) => {
+        return await axios
+          .get<NaverCategoryResponse>(
+            "https://datalab.naver.com/shoppingInsight/getCategory.naver",
+            {
+              params: {
+                cid,
+              },
+              headers: {
+                referer:
+                  "https://datalab.naver.com/shoppingInsight/sCategory.naver",
+              },
+            }
+          )
+          .catch(retry);
+      },
+      {
+        retries: 5,
+      }
     );
 
-    return result.result;
+    return data.data;
   } catch (e) {
     console.error(e);
     return undefined;

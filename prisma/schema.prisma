@@ -58,6 +58,7 @@ model KeywordInfo {
   avgPrice            Int      @default(0)
   brandPercent        Int      @default(0)
   totalSearch         Int      @default(0)
+  totalPurchaseCnt    Int      @default(0)
   competitionRate     String?
   productImg          String?
   category            Json?

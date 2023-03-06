@@ -73,6 +73,8 @@ export function getsearchProuctList(keyword: string, index?: number) {
         },
         headers: {
           referer: "https://msearch.shopping.naver.com/search/all",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
         },
       }
     );

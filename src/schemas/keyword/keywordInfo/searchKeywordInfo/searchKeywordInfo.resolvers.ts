@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { getsearchProuctList } from "../../../../api/naver/crawling/searchProduct";
 import {
   NaverDataLabAPI,
   NaverKeywordTrandResults,
@@ -11,6 +12,7 @@ import {
   nowKrDate,
   upDateToString,
 } from "../../../../util/dateToString";
+import { Sleep } from "../../../../util/sleep";
 import { State } from "../../../common.resolvers";
 import { ErrCode } from "../../../schemaErrCode";
 import {
@@ -160,6 +162,17 @@ export async function searchKeywordResult(
   // 4. 상위 100개 네이버 쇼핑 상품 검색 결과 통계
   const top100Shops = await naverDataLabAPI.getShop(keyword, 100);
 
+  let totalPurchaseCnt = 0;
+  // for (let i = 1; i <= 2; i++) {
+  //   await Sleep(100);
+  //   const naverPowerRank = await getsearchProuctList(keyword, i);
+
+  //   naverPowerRank.data.shoppingResult.products.forEach((item) => {
+  //     totalPurchaseCnt += item.purchaseCnt;
+  //   });
+  //   console.log(Date.now(), keyword, i);
+  // }
+
   // 상위 100개 상품 카테고리 비율 / 평균가 / 최고가 / 최저값 / 브랜드 접유율 계산
   const shopStatic = top100ShopsStatistics(top100Shops);
 
@@ -172,6 +185,7 @@ export async function searchKeywordResult(
 
   const result = {
     keyword: kwd,
+    totalPurchaseCnt,
     totalSearch: pcQcCnt + mobileQcCnt,
     totalSeller: top100Shops.total,
     loPrice: shopStatic.lowPrice,
@@ -312,6 +326,7 @@ const searchKeywordInfo: Resolver<SearchKeywordInfoResult> = async (
         avgPrice,
         brandPercent,
         totalSearch,
+        totalPurchaseCnt,
         competitionRate,
         productImg,
         category,
@@ -336,6 +351,7 @@ const searchKeywordInfo: Resolver<SearchKeywordInfoResult> = async (
           avgPrice,
           brandPercent,
           totalSearch,
+          totalPurchaseCnt,
           competitionRate,
           productImg,
           category: category as ProductCategory[],

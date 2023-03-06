@@ -25,6 +25,7 @@ export async function getMobileProductShopList(
     const list = await getsearchProuctList(keyword, page);
 
     if (!list.data.shoppingResult) {
+      console.log(list);
       return [];
     }
 

@@ -63,7 +63,7 @@ export async function getProductDisplayPosition(
   try {
     let find = false;
     let findAd = false;
-    for (let page = 1; page < 20; page++) {
+    for (let page = 1; page <= 20; page++) {
       const data = await getMobileProductShopList(keyword, page);
 
       const findIdx = data.findIndex((item) => item.productId === productNo);
@@ -87,7 +87,7 @@ export async function getProductDisplayPosition(
         break;
       }
 
-      await Sleep(100);
+      await Sleep(500);
     }
   } catch (e) {
     console.error("getProductDisplayPosition", e);

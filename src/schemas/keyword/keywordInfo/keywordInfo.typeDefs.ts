@@ -32,6 +32,7 @@ export default `#graphql
         avgPrice: Int
         brandPercent: Int
         totalSearch: Int
+        totalPurchaseCnt:Int
         competitionRate: String
         productImg: String
         category: [ProductCategory]

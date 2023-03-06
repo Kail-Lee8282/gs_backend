@@ -1,6 +1,7 @@
 import client from "../modules/client";
 import { getProductDisplayPosition } from "../schemas/productMonitoring/monitoring.resolvers";
 import { dateTimeToString, dateToString } from "../util/dateToString";
+import { Sleep } from "../util/sleep";
 
 /**
  * 금일 제품 업데이트
@@ -25,6 +26,7 @@ export async function updateTodayProductMonitoring() {
     if (findDatas && findDatas.length > 0) {
       for (let i = 0; i < findDatas.length; i++) {
         const { id, keyword, productNo } = findDatas[i];
+        await Sleep(500);
         const data = await getProductDisplayPosition(keyword, productNo);
         const updateData = await client.monitoringKeywordRank.create({
           data: {

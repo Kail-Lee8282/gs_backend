@@ -13,8 +13,8 @@ async function InsertNaverCategory(cid: number, client: PrismaClient) {
   await Sleep(200);
   // 네이버 cid 해당하는 카테고리 정보를 조회
   const root = await getCategoriesFormNaver(cid);
-  if (root.data && root.data.childList && root.data.childList.length > 0) {
-    const param = root.data.childList.map((item) => {
+  if (root && root.childList && root.childList.length > 0) {
+    const param = root.childList.map((item) => {
       return {
         cid: item.cid,
         name: item.name,
@@ -22,13 +22,15 @@ async function InsertNaverCategory(cid: number, client: PrismaClient) {
       };
     });
 
+    console.log(param);
+
     await client.category.createMany({
       data: param,
       skipDuplicates: true,
     });
 
-    for (let i = 0; i < root.data.childList.length; i++) {
-      const item = root.data.childList[i];
+    for (let i = 0; i < root.childList.length; i++) {
+      const item = root.childList[i];
       await InsertNaverCategory(item.cid, client);
     }
   }

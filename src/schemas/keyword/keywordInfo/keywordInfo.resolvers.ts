@@ -58,6 +58,8 @@ export type KeywordInfo = {
   brandPercent?: number;
   /** 한달 검색량 */
   totalSearch?: number;
+  /** 6개월간 상위 80개 상품 판매개수 */
+  totalPurchaseCnt?: number;
   /** 경쟁 강도 */
   competitionRate?: string;
   /** 키워드 대표 이미지 */
